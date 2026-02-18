@@ -10,19 +10,16 @@ int main(void) {
     SCB->CPACR |= ((3UL << 20U)|(3UL << 22U));
 #endif
 
-    GPIOF_AHB->DIR |= (LED_RED | LED_BLUE | LED_GREEN);
-    GPIOF_AHB->DEN |= (LED_RED | LED_BLUE | LED_GREEN);
+    BSP_init();
 
-    SysTick->LOAD = SYS_CLOCK_HZ/2U - 1U;
-    SysTick->VAL  = 0U;
-    SysTick->CTRL = (1U << 2U) | (1U << 1U) | 1U;
-
-    SysTick_Handler();
-
-    __enable_irq();
     while (1) {
-        GPIOF_AHB->DATA_Bits[LED_GREEN] = LED_GREEN;
-        GPIOF_AHB->DATA_Bits[LED_GREEN] = 0U;
+        //GPIOF_AHB->DATA_Bits[LED_GREEN] = LED_GREEN;
+        //GPIOF_AHB->DATA_Bits[LED_GREEN] = 0U;
+        __disable_irq();
+        GPIOF_AHB->DATA = GPIOF_AHB->DATA | LED_GREEN; // do not distrub the other bits
+        __enable_irq();
+        GPIOF_AHB->DATA = GPIOF_AHB->DATA & ~LED_GREEN; // clear the led_green bit, flashes it now
+        __disable_irq();
 
 #if (__ARM_FP != 0) /* if VFP available... */
         /* exercise the single-precision FPU */

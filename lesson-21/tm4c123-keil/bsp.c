@@ -11,6 +11,9 @@
 
 static uint32_t volatile l_tickCtr;
 
+uint32_t *sp_blinky1 = &stack_blinky1[40]; // point to one over the end
+// this is becasue on arm chips stack
+
 /* ISRs  ===============================================*/
 void SysTick_Handler(void) {
     ++l_tickCtr;

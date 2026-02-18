@@ -17,7 +17,7 @@ int main(void) {
 #endif
 
 /* background code: non-blocking version */
-int main(void) {
+int main1(void) {
     BSP_init();
     while (1) {
         /* Blinky polling state machine */
@@ -52,4 +52,54 @@ int main(void) {
         }
     }
     //return 0;
+}
+
+/* background code: non-blocking version */
+int main2(void) {
+    BSP_init();
+    while (1) {
+        /* Blinky polling state machine */
+        static enum {
+            INITIAL,
+            OFF_STATE,
+            ON_STATE
+        } state = INITIAL;
+        static uint32_t start;
+        switch (state) {
+            case INITIAL:
+                start = BSP_tickCtr();
+                state = OFF_STATE; /* initial transition */
+                break;
+            case OFF_STATE:
+                if ((BSP_tickCtr() - start) > BSP_TICKS_PER_SEC * 3U / 4U) {
+                    BSP_ledGreenOn();
+                    start = BSP_tickCtr();
+                    state = ON_STATE; /* state transition */
+                }
+                break;
+            case ON_STATE:
+                if ((BSP_tickCtr() - start) > BSP_TICKS_PER_SEC / 4U) {
+                    BSP_ledGreenOff();
+                    start = BSP_tickCtr();
+                    state = OFF_STATE; /* state transition */
+                }
+                break;
+            default:
+                //error();
+                break;
+        }
+    }
+    //return 0;
+}
+
+int main(){
+    uint32_t volatile run = 0U;
+
+    BSP_init();
+
+    if(run){
+        main1();
+    } else {
+        main2();
+    }
 }
