@@ -16,6 +16,8 @@ int main(void) {
 }
 #endif
 
+uint32_t stack_blinky1[40];
+uint32_t *sp_blinky1 = & stack_blinky1;
 /* background code: non-blocking version */
 int main1(void) {
     BSP_init();
@@ -54,6 +56,8 @@ int main1(void) {
     //return 0;
 }
 
+uint32_t stack_blinky2[40];
+uint32_t *sp_blinky2 = & stack_blinky2;
 /* background code: non-blocking version */
 int main2(void) {
     BSP_init();
@@ -97,9 +101,11 @@ int main(){
 
     BSP_init();
 
-    if(run){
-        main1();
-    } else {
-        main2();
-    }
+    *(--sp_blinky1) = (1U << 24);
+    *(--sp_blinky1) = (uint32_t)&main1; // you can cast address to fcn, this is PC register, where it will return to
+    *(--sp_blinky1) = 0x00000001; // lr, etc.
+
+    *(--sp_blinky2) = (1U << 24);
+    *(--sp_blinky2) = (uint32_t)&main2; // you can cast address to fcn, this is PC register, where it will return to
+    *(--sp_blinky2) = 0x00000001; // lr, etc.
 }

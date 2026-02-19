@@ -2,6 +2,7 @@
 #include <stdint.h>  /* Standard integers. WG14/N843 C99 Standard */
 
 #include "bsp.h"
+#include "miros.h"
 #include "TM4C123GH6PM.h" /* the TM4C MCU Peripheral Access Layer (TI) */
 
 /* on-board LEDs */
@@ -12,12 +13,19 @@
 static uint32_t volatile l_tickCtr;
 
 uint32_t *sp_blinky1 = &stack_blinky1[40]; // point to one over the end
-// this is becasue on arm chips stack
+// this is becasue on arm chips stack grows towards the bottom
+//
 
 /* ISRs  ===============================================*/
 void SysTick_Handler(void) {
     ++l_tickCtr;
+    __disable_irq();
+    OS_sched();
+    __enable_irq();
+
+    // we can now do code switch in the pendsv_handler
 }
+
 
 /* BSP functions ===========================================================*/
 void BSP_init(void) {
@@ -28,6 +36,9 @@ void BSP_init(void) {
 
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / BSP_TICKS_PER_SEC);
+
+    // set systic interrupt
+    NVIC_SetPriority(SysTick_IRQn, 0U); // <-- where the systick is
 
     __enable_irq();
 }
